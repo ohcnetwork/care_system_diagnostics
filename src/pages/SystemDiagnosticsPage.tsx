@@ -1456,6 +1456,50 @@ function PrinterTestSection() {
   const [testPrintStatus, setTestPrintStatus] = useState<
     "idle" | "printing" | "done"
   >("idle");
+  const [browserSupportsDetection, setBrowserSupportsDetection] =
+    useState(false);
+  const [browserName, setBrowserName] = useState("");
+  const [printerCheckStatus, setPrinterCheckStatus] = useState<
+    "checking" | "available" | "not-available"
+  >("checking");
+
+  useEffect(() => {
+    // Check if browser is Chrome or Edge
+    const isEdge = /Edg/.test(navigator.userAgent);
+    const isChrome = /Chrome/.test(navigator.userAgent);
+    const supported = isChrome || isEdge;
+    setBrowserSupportsDetection(supported);
+    if (supported) {
+      setBrowserName(isEdge ? "Microsoft Edge" : "Google Chrome");
+    }
+
+    // Check if Web Printing API is available (experimental)
+    const checkPrinterAPI = async () => {
+      try {
+        const nav = navigator as unknown as {
+          printing?: { getPrinters: () => Promise<unknown[]> };
+        };
+        if (nav.printing && typeof nav.printing.getPrinters === "function") {
+          const printers = await nav.printing.getPrinters();
+          if (printers && printers.length > 0) {
+            setPrinterCheckStatus("available");
+          } else {
+            setPrinterCheckStatus("not-available");
+          }
+        } else {
+          setPrinterCheckStatus("not-available");
+        }
+      } catch {
+        setPrinterCheckStatus("not-available");
+      }
+    };
+
+    if (supported) {
+      checkPrinterAPI();
+    } else {
+      setPrinterCheckStatus("not-available");
+    }
+  }, []);
 
   const handleTestPrint = useCallback(() => {
     setTestPrintStatus("printing");
@@ -1473,7 +1517,21 @@ function PrinterTestSection() {
               p { color: #666; font-size: 14px; }
               .box { border: 2px solid #000; padding: 20px; margin: 20px auto; max-width: 300px; }
               .patterns { display: flex; justify-content: center; gap: 8px; margin-top: 16px; }
-              .patterns span { display: inline-block; width: 30px; height: 30px; }
+              .patterns span { 
+                display: inline-block; 
+                width: 30px; 
+                height: 30px;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color-adjust: exact !important;
+              }
+              @media print {
+                .patterns span {
+                  -webkit-print-color-adjust: exact !important;
+                  print-color-adjust: exact !important;
+                  color-adjust: exact !important;
+                }
+              }
             </style>
           </head>
           <body>
@@ -1539,9 +1597,38 @@ function PrinterTestSection() {
 
       <Separator />
 
-      <div className="text-xs text-gray-500 px-1">
-        <InfoIcon className="mr-1 inline-block size-3" />
-        {t("printers_not_supported_desc")}
+      <div className="rounded-md border border-gray-100 bg-gray-50 px-3 py-2">
+        <div className="flex items-center gap-2">
+          <InfoIcon className="size-4 shrink-0 text-gray-500" />
+          <div className="text-xs">
+            {browserSupportsDetection ? (
+              <div className="space-y-2">
+                <p className="font-medium text-gray-700">
+                  {t("browser_detected")}: {browserName}
+                </p>
+                {printerCheckStatus === "checking" ? (
+                  <p className="text-gray-600">
+                    <RefreshCwIcon className="inline-block size-3 animate-spin mr-1" />
+                    {t("checking")}
+                  </p>
+                ) : printerCheckStatus === "available" ? (
+                  <p className="text-green-600 font-medium">
+                    <CheckCircle2Icon className="inline-block size-3 mr-1" />
+                    {t("printers_detected")}
+                  </p>
+                ) : (
+                  <p className="text-gray-600">
+                    {t("printers_not_supported_desc")}
+                  </p>
+                )}
+              </div>
+            ) : (
+              <p className="text-gray-600">
+                {t("printers_not_supported_desc")}
+              </p>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -9,6 +9,7 @@
   "available_printers_desc": "Detected printers and their current status",
   "backend_health": "Backend Health",
   "backend_health_desc": "Server-side health checks and service status",
+  "browser_detected": "Browser Detected",
   "camera": "Camera",
   "camera_access_denied": "Permission denied — cannot access camera",
   "camera_and_microphone": "Camera & Microphone",
@@ -101,7 +102,7 @@
   "printer_printing": "Printing",
   "printer_status": "Printer Status",
   "printers_not_supported": "Printer detection not supported in this browser",
-  "printers_not_supported_desc": "The Web Printing API is not available. Use Chrome or Edge for printer detection.",
+  "printers_not_supported_desc": "The Web Printing API is currently experimental and not yet available. You can still use the 'Send Test Page' button to print.",
   "recaptcha": "reCAPTCHA",
   "registered": "Registered",
   "rerun": "Rerun All",
@@ -134,5 +135,6 @@
   "unreachable": "Unreachable",
   "url_not_configured": "URL not configured",
   "waiting": "Waiting",
-  "watermark": "Watermark"
+  "watermark": "Watermark",
+  "printers_detected": "Printers detected"
 }
